@@ -34,10 +34,49 @@ func NewNode(x, y int, parent Node, cave Cave) Node {
 	return n
 }
 
-func firstStar(filename string) int {
+func solution(filename string, mult bool) int {
 	cave := parseFile(filename)
+	if mult {
+		cave = mutiplay(cave)
+	}
 	lastNode := getPath(cave)
 	return lastNode.G
+}
+
+func mutiplay(cave Cave) Cave {
+	//multiplay colomns
+	lx := len(cave[0])
+	ly := len(cave)
+	for k := 0; k < 4; k++ {
+		for j := 0; j < ly; j++ {
+			for i := 0; i < lx; i++ {
+				v := cave[j][i]
+				v = rotate(v, k)
+				cave[j] = append(cave[j], v)
+			}
+		}
+	}
+	//multiplay rows
+	lx = len(cave[0])
+	for k := 0; k < 4; k++ {
+		for j := 0; j < ly; j++ {
+			var row []int
+			for i := 0; i < lx; i++ {
+				v := cave[j][i]
+				v = rotate(v, k)
+				row = append(row, v)
+			}
+			cave = append(cave, row)
+		}
+	}
+	return cave
+}
+
+func rotate(v, tile int) int {
+	r := (v + tile) % 9
+	r++
+	return r
+
 }
 
 func getPath(cave Cave) Node {
@@ -128,16 +167,20 @@ func parseFile(filename string) (cave Cave) {
 	return cave
 }
 
-func TestFirstStar(t *testing.T) {
+func TestSolution(t *testing.T) {
 	cases := []struct {
-		filename string
-		result   int
+		filename  string
+		multiplay bool
+		result    int
 	}{
-		{"example", 40},
-		{"input", 0},
+		{"example", false, 40},
+		{"input", false, 656},
+		{"exampleExtended", false, 315},
+		{"example", true, 315},
+		{"input", true, 2979},
 	}
 	for _, c := range cases {
-		got := firstStar(c.filename)
+		got := solution(c.filename, c.multiplay)
 		expected := c.result
 		if expected != got {
 			t.Errorf("Expected %d,  got %d", expected, got)
