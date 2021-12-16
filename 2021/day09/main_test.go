@@ -10,6 +10,12 @@ import (
 
 type Cave [][]int
 
+type Point struct {
+	X, Y int
+}
+
+type LowPoints map[Point]int
+
 func solution(filename string) int {
 	cave := parseFile(filename)
 	lowPoints := getLowPoints(cave)
@@ -20,7 +26,8 @@ func solution(filename string) int {
 	return sum
 }
 
-func getLowPoints(cave Cave) (lowPoints []int) {
+func getLowPoints(cave Cave) (lowPoints LowPoints) {
+	lowPoints = make(LowPoints)
 	neibors := [][]int{
 		{-1, 0},
 		{1, 0},
@@ -42,7 +49,7 @@ func getLowPoints(cave Cave) (lowPoints []int) {
 				}
 			}
 			if ismin {
-				lowPoints = append(lowPoints, v)
+				lowPoints[Point{x, y}] = v
 			}
 		}
 	}
