@@ -22,33 +22,36 @@ type Limit struct {
 
 func TestFindHighest(t *testing.T) {
 	cases := []struct {
-		l      Limit
-		result int
+		l     Limit
+		hight int
+		nSol  int
 	}{
-		{l: Limit{X: Range{Min: 20, Max: 30}, Y: Range{Min: -10, Max: -5}}, result: 45},
-		{l: Limit{X: Range{Min: 248, Max: 285}, Y: Range{Min: -85, Max: -56}}, result: 3570},
+		{l: Limit{X: Range{Min: 20, Max: 30}, Y: Range{Min: -10, Max: -5}}, hight: 45, nSol: 112},
+		{l: Limit{X: Range{Min: 248, Max: 285}, Y: Range{Min: -85, Max: -56}}, hight: 3570, nSol: 1},
 	}
 	for _, c := range cases {
-		got := findHighest(c.l)
-		expected := c.result
-		if expected != got {
-			t.Errorf("Expected %d,  got %d", expected, got)
+		h, n := findHighest(c.l)
+		expected := c.hight
+		if expected != h || c.nSol != n {
+			t.Errorf("Expected %d and nsol %d,  got %d and %d", expected, c.nSol, h, n)
 		}
 	}
 }
 
-func findHighest(l Limit) (result int) {
-	for x := 1; x < l.X.Max; x++ {
-		for y := 0; y < 500; y++ {
+func findHighest(l Limit) (higt int, nsolution int) {
+	var vs []Velocity
+	for x := 1; x <= l.X.Max; x++ {
+		for y := l.Y.Min; y <= -l.Y.Min; y++ {
 			v := Velocity{X: x, Y: y}
 			if ok, y_max := isImpact(v, l); ok {
-				if y_max > result {
-					result = y_max
+				vs = append(vs, v)
+				if y_max > higt {
+					higt = y_max
 				}
 			}
 		}
 	}
-	return result
+	return higt, len(vs)
 }
 
 func TestIsImpact(t *testing.T) {
