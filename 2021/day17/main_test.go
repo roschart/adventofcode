@@ -26,6 +26,7 @@ func TestFindHighest(t *testing.T) {
 		result int
 	}{
 		{l: Limit{X: Range{Min: 20, Max: 30}, Y: Range{Min: -10, Max: -5}}, result: 45},
+		{l: Limit{X: Range{Min: 248, Max: 285}, Y: Range{Min: -85, Max: -56}}, result: 3570},
 	}
 	for _, c := range cases {
 		got := findHighest(c.l)
