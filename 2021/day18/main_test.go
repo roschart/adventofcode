@@ -176,7 +176,6 @@ func split(n, root *Number) {
 			Left:  &Number{Id: Value, Value: l},
 			Right: &Number{Id: Value, Value: r},
 		}
-		fmt.Println("After Split", root)
 	}
 
 }
@@ -367,5 +366,59 @@ func TestFirstStar(t *testing.T) {
 			t.Errorf("Expected %d,  got %d", expected, got)
 		}
 	}
+}
 
+func TestReduce2(t *testing.T) {
+	cases := []struct {
+		n        string
+		expected string
+	}{
+		{"[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]"},
+		{"[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]"},
+		{"[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]"},
+		{"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[7,0]]]]"},
+		{"[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"},
+	}
+	for _, c := range cases {
+		_, got := ParseNum(c.n)
+		reduce2(got)
+
+		if c.expected != got.String() {
+			t.Errorf("Expected %s, got %s", c.expected, got.String())
+		}
+	}
+}
+
+func reduce2(root *Number) {
+	executed := executeAction(root, root, 1)
+	for executed {
+		executed = executeAction(root, root, 1)
+	}
+}
+
+func executeAction(current, root *Number, deep int) bool {
+	switch current.Id {
+	case Pair:
+		if current.Left.Id == Value && current.Right.Id == Value && deep >= 5 {
+			sumToExtrems(current, root)
+			current = &Number{Id: Value, Value: 0}
+			fmt.Println("After Explode: ", root)
+			return true
+		} else {
+			el := executeAction(current.Left, root, deep+1)
+			if el {
+				return true
+			}
+			er := executeAction(current.Right, root, deep+1)
+
+			return er
+		}
+	case Value:
+		if current.Value > 9 {
+			split(current, root)
+			fmt.Println("After Split:   ", root)
+			return true
+		}
+	}
+	return false
 }
