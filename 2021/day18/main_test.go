@@ -64,18 +64,18 @@ func ParseCharacter(rest string) string {
 	return rest[1:]
 }
 
-func explode(current, root *Number, deep, Max_deep int) bool {
+func explode(current, root *Number, deep int) bool {
+	const Max_deep = 5
 	if deep == Max_deep && current.Id == Pair {
-		fmt.Printf("Explosion at.Current %s, deep %d\n", current.String(), deep)
 
 		sumToExtrems(current, root)
 		current = &Number{Id: Value, Value: 0}
 		return true
 	}
 	if current.Id == Pair {
-		el := explode(current.Left, root, deep+1, Max_deep)
+		el := explode(current.Left, root, deep+1)
 		if !el {
-			return explode(current.Right, root, deep+1, Max_deep)
+			return explode(current.Right, root, deep+1)
 		}
 
 	}
@@ -83,7 +83,6 @@ func explode(current, root *Number, deep, Max_deep int) bool {
 }
 
 func sumToExtrems(current, root *Number) {
-	fmt.Println("SumExtrems", current, root)
 	vs := flat(root)
 	a := current.Left
 	b := current.Right
@@ -113,32 +112,37 @@ func flat(n *Number) (result []*Number) {
 	return result
 }
 
-func AddToRight(n *Number, i int) {
-	fmt.Println("Add to Righ")
-	if n == nil {
-		return
-	}
+func split(n *Number) {
 	switch n.Id {
 	case Pair:
-		AddToRight(n.Right, i)
+		panic("Pairs not must be splited")
 	case Value:
-		n.Value += i
+		a := n.Value
+		var l, r int
+		l = a / 2
+		r = a / 2
+		if a%2 == 1 {
+			r = r + 1
 
+		}
+		*n = Number{
+			Id:    Pair,
+			Left:  &Number{Id: Value, Value: l},
+			Right: &Number{Id: Value, Value: r},
+		}
 	}
+
 }
 
-func AddToLeft(n *Number, i int) {
-	if n == nil {
-		return
-	}
-	switch n.Id {
-	case Pair:
-		AddToLeft(n.Left, i)
-	case Value:
-		n.Value += i
-
-	}
+func adition(a, b *Number) *Number {
+	return &Number{Id: Pair, Left: a, Right: b}
 }
+
+// func reduce(a, b *Number) *Number {
+// 	r := adition(a, b)
+// 	explode(r, r, 1)
+// 	return r
+// }
 
 func TestParse(t *testing.T) {
 	cases := []struct {
@@ -162,23 +166,57 @@ func TestParse(t *testing.T) {
 func TestExplode(t *testing.T) {
 	cases := []struct {
 		line     string
-		deep     int
 		expected string
 	}{
-		{"[1,[9,2]]", 2, "[10,0]"},
-		{"[[[[[9,8],1],2],3],4]", 5, "[[[[0,9],2],3],4]"},
-		{"[7,[6,[5,[4,[3,2]]]]]", 5, "[7,[6,[5,[7,0]]]]"},
-		{"[[6,[5,[4,[3,2]]]],1]", 5, "[[6,[5,[7,0]]],3]"},
-		{"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", 5, "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"},
-		{"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]", 5, "[[3,[2,[8,0]]],[9,[5,[7,0]]]]"},
+		{"[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]"},
+		{"[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]"},
+		{"[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]"},
+		{"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"},
+		{"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[7,0]]]]"},
 	}
 
 	for _, c := range cases {
 		_, n := ParseNum(c.line)
-		explode(n, n, 1, c.deep)
+		explode(n, n, 1)
 
 		if c.expected != n.String() {
 			t.Errorf("Expected %s, got %s", c.expected, n.String())
+		}
+	}
+}
+
+func TestSplit(t *testing.T) {
+	cases := []struct {
+		n        Number
+		expected string
+	}{
+		{Number{Id: Value, Value: 12}, "[6,6]"},
+		{Number{Id: Value, Value: 13}, "[6,7]"},
+	}
+	for _, c := range cases {
+		n := &c.n
+		split(n)
+
+		if c.expected != n.String() {
+			t.Errorf("Expected %s, got %s", c.expected, n.String())
+		}
+	}
+}
+
+func TestAdition(t *testing.T) {
+	cases := []struct {
+		a, b     string
+		expected string
+	}{
+		{"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]", "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"},
+	}
+	for _, c := range cases {
+		_, na := ParseNum(c.a)
+		_, nb := ParseNum(c.b)
+		got := adition(na, nb)
+
+		if c.expected != got.String() {
+			t.Errorf("Expected %s, got %s", c.expected, got.String())
 		}
 	}
 }
