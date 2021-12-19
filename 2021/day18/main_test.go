@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -40,6 +42,34 @@ func (n *Number) String() string {
 	panic("No all cases analize for string")
 }
 
+func firstStart(filename string) int {
+	lines := parseFile(filename)
+	_, acc := ParseNum(lines[0])
+
+	for i := 1; i < len(lines); i++ {
+		_, n := ParseNum(lines[i])
+		acc = reduce(acc, n)
+	}
+	return acc.magnitude()
+}
+
+func parseFile(filename string) (lines []string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+	return lines
+}
+
 func ParseNum(s string) (string, *Number) {
 	c := s[0]
 	rest := s[1:]
@@ -67,13 +97,13 @@ func ParseCharacter(rest string) string {
 func explode(current, root *Number, deep int) []*Number {
 	const Max_deep = 5
 	if deep == Max_deep && current.Id == Pair {
-
+		fmt.Println("Exploding", current)
 		affected := sumToExtrems(current, root)
 		current = &Number{Id: Value, Value: 0}
 		fmt.Println("After Explode:", root)
 		for _, a := range affected {
 			if a.Value > 9 {
-				split(a)
+				split(a, root)
 			}
 		}
 		return affected
@@ -125,7 +155,7 @@ func flat(n *Number) (result []*Number) {
 	return result
 }
 
-func split(n *Number) {
+func split(n, root *Number) {
 	switch n.Id {
 	case Pair:
 		panic("Pairs not must be splited")
@@ -143,7 +173,7 @@ func split(n *Number) {
 			Left:  &Number{Id: Value, Value: l},
 			Right: &Number{Id: Value, Value: r},
 		}
-		fmt.Println("After Split", n)
+		fmt.Println("After Split", root)
 	}
 
 }
@@ -214,7 +244,7 @@ func TestSplit(t *testing.T) {
 	}
 	for _, c := range cases {
 		n := &c.n
-		split(n)
+		split(n, n)
 
 		if c.expected != n.String() {
 			t.Errorf("Expected %s, got %s", c.expected, n.String())
@@ -245,7 +275,8 @@ func TestReduce(t *testing.T) {
 		a, b     string
 		expected string
 	}{
-		{"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"},
+		{"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]", "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]", "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"},
+		// {"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"},
 	}
 	for _, c := range cases {
 		_, na := ParseNum(c.a)
@@ -255,5 +286,82 @@ func TestReduce(t *testing.T) {
 		if c.expected != got.String() {
 			t.Errorf("Expected %s, got %s", c.expected, got.String())
 		}
+		t.Fail()
 	}
+}
+
+func TestReduceMultiline(t *testing.T) {
+	cases := []struct {
+		lines    []string
+		expected string
+	}{
+		{lines: []string{
+			"[1,1]",
+			"[2,2]",
+			"[3,3]",
+			"[4,4]",
+		},
+			expected: "[[[[1,1],[2,2]],[3,3]],[4,4]]",
+		}, {lines: []string{
+			"[1,1]",
+			"[2,2]",
+			"[3,3]",
+			"[4,4]",
+			"[5,5]",
+		},
+			expected: "[[[[3,0],[5,3]],[4,4]],[5,5]]",
+		},
+		{lines: []string{
+			"[1,1]",
+			"[2,2]",
+			"[3,3]",
+			"[4,4]",
+			"[5,5]",
+			"[6,6]",
+		},
+			expected: "[[[[5,0],[7,4]],[5,5]],[6,6]]",
+		},
+		{lines: []string{
+			"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]",
+			"[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]",
+			"[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]",
+			"[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]",
+			"[7,[5,[[3,8],[1,4]]]]",
+			"[[2,[2,2]],[8,[8,1]]]",
+			"[2,9]",
+			"[1,[[[9,3],9],[[9,0],[0,7]]]]",
+			"[[[5,[7,4]],7],1]",
+			"[[[[4,2],2],6],[8,7]]",
+		},
+			expected: "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]",
+		},
+	}
+	for _, c := range cases {
+		_, acc := ParseNum(c.lines[0])
+
+		for i := 1; i < len(c.lines); i++ {
+			_, n := ParseNum(c.lines[i])
+			acc = reduce(acc, n)
+		}
+		if c.expected != acc.String() {
+			t.Errorf("Expected %s, got %s", c.expected, acc.String())
+		}
+	}
+}
+
+func TestFirstStar(t *testing.T) {
+	cases := []struct {
+		filename string
+		result   int
+	}{
+		{"example", 4140},
+	}
+	for _, c := range cases {
+		got := firstStart(c.filename)
+		expected := c.result
+		if expected != got {
+			t.Errorf("Expected %d,  got %d", expected, got)
+		}
+	}
+
 }
