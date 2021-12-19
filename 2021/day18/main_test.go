@@ -64,25 +64,34 @@ func ParseCharacter(rest string) string {
 	return rest[1:]
 }
 
-func explode(current, root *Number, deep int) bool {
+func explode(current, root *Number, deep int) []*Number {
 	const Max_deep = 5
 	if deep == Max_deep && current.Id == Pair {
 
-		sumToExtrems(current, root)
+		affected := sumToExtrems(current, root)
 		current = &Number{Id: Value, Value: 0}
-		return true
+		fmt.Println("After Explode:", root)
+		for _, a := range affected {
+			if a.Value > 9 {
+				split(a)
+			}
+		}
+		return affected
 	}
 	if current.Id == Pair {
-		el := explode(current.Left, root, deep+1)
-		if !el {
+		affected := explode(current.Left, root, deep+1)
+		if len(affected) > 0 {
+			return affected
+		}
+		if len(affected) == 0 {
 			return explode(current.Right, root, deep+1)
 		}
 
 	}
-	return false
+	return make([]*Number, 0)
 }
 
-func sumToExtrems(current, root *Number) {
+func sumToExtrems(current, root *Number) (affected []*Number) {
 	vs := flat(root)
 	a := current.Left
 	b := current.Right
@@ -92,13 +101,17 @@ func sumToExtrems(current, root *Number) {
 			if i-2 >= 0 {
 				n := vs[i-2]
 				n.Value += a.Value
+				affected = append(affected, n)
 			}
 			if i+1 < len(vs) {
-				vs[i+1].Value += b.Value
+				n := vs[i+1]
+				n.Value += b.Value
+				affected = append(affected, n)
 			}
 		}
 	}
 	*current = Number{Id: Value, Value: 0}
+	return affected
 }
 
 func flat(n *Number) (result []*Number) {
@@ -130,6 +143,7 @@ func split(n *Number) {
 			Left:  &Number{Id: Value, Value: l},
 			Right: &Number{Id: Value, Value: r},
 		}
+		fmt.Println("After Split", n)
 	}
 
 }
@@ -138,11 +152,16 @@ func adition(a, b *Number) *Number {
 	return &Number{Id: Pair, Left: a, Right: b}
 }
 
-// func reduce(a, b *Number) *Number {
-// 	r := adition(a, b)
-// 	explode(r, r, 1)
-// 	return r
-// }
+func reduce(a, b *Number) *Number {
+	r := adition(a, b)
+	fmt.Println("After adition", r)
+	affected := explode(r, r, 1)
+	for len(affected) > 0 {
+
+		affected = explode(r, r, 1)
+	}
+	return r
+}
 
 func TestParse(t *testing.T) {
 	cases := []struct {
@@ -214,6 +233,24 @@ func TestAdition(t *testing.T) {
 		_, na := ParseNum(c.a)
 		_, nb := ParseNum(c.b)
 		got := adition(na, nb)
+
+		if c.expected != got.String() {
+			t.Errorf("Expected %s, got %s", c.expected, got.String())
+		}
+	}
+}
+
+func TestReduce(t *testing.T) {
+	cases := []struct {
+		a, b     string
+		expected string
+	}{
+		{"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"},
+	}
+	for _, c := range cases {
+		_, na := ParseNum(c.a)
+		_, nb := ParseNum(c.b)
+		got := reduce(na, nb)
 
 		if c.expected != got.String() {
 			t.Errorf("Expected %s, got %s", c.expected, got.String())
