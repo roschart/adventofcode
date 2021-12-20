@@ -42,7 +42,7 @@ func (n *Number) String() string {
 	panic("No all cases analize for string")
 }
 
-func firstStart(filename string) int {
+func firstStar(filename string) int {
 	lines := parseFile(filename)
 	_, acc := ParseNum(lines[0])
 
@@ -51,6 +51,27 @@ func firstStart(filename string) int {
 		acc = reduce(acc, n)
 	}
 	return acc.magnitude()
+}
+
+func secondStar(filename string) int {
+	lines := parseFile(filename)
+	magnitude_max := 0
+	var n_max *Number
+	for i := 0; i < len(lines); i++ {
+		for j := 0; j < len(lines); j++ {
+			_, a := ParseNum(lines[i])
+			_, b := ParseNum(lines[j])
+			c := adition(a, b)
+			reduceNum(c)
+			m := c.magnitude()
+			if m > magnitude_max {
+				magnitude_max = m
+				n_max = c
+			}
+		}
+	}
+	fmt.Println("Max", n_max)
+	return magnitude_max
 }
 
 func parseFile(filename string) (lines []string) {
@@ -93,36 +114,6 @@ func ParseNum(s string) (string, *Number) {
 func ParseCharacter(rest string) string {
 	return rest[1:]
 }
-
-// func explode(current, root *Number, deep int) []*Number {
-// 	const Max_deep = 5
-// 	if deep >= Max_deep && current.Id == Pair {
-// 		if current.Left.Id == Value || current.Right.Id == Value {
-// 			fmt.Println("Exploding", current)
-// 			affected := sumToExtrems(current, root)
-// 			current = &Number{Id: Value, Value: 0}
-// 			fmt.Println("After Explode:", root)
-// 			for _, a := range affected {
-// 				if a.Value > 9 {
-// 					split(a, root)
-// 				}
-// 			}
-// 			return affected
-// 		}
-
-// 	}
-// 	if current.Id == Pair {
-// 		affected := explode(current.Left, root, deep+1)
-// 		if len(affected) > 0 {
-// 			return affected
-// 		}
-// 		if len(affected) == 0 {
-// 			return explode(current.Right, root, deep+1)
-// 		}
-
-// 	}
-// 	return make([]*Number, 0)
-// }
 
 func sumToExtrems(current, root *Number) (affected []*Number) {
 	vs := flat(root)
@@ -332,7 +323,7 @@ func TestFirstStar(t *testing.T) {
 		{"input", 4017},
 	}
 	for _, c := range cases {
-		got := firstStart(c.filename)
+		got := firstStar(c.filename)
 		expected := c.result
 		if expected != got {
 			t.Errorf("Expected %d,  got %d", expected, got)
@@ -340,11 +331,12 @@ func TestFirstStar(t *testing.T) {
 	}
 }
 
-func TestReduce2(t *testing.T) {
+func TestReduceNum(t *testing.T) {
 	cases := []struct {
 		n        string
 		expected string
 	}{
+		{"[[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]],[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]]", "nothin"},
 		{"[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]"},
 		{"[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]"},
 		{"[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]"},
@@ -365,7 +357,6 @@ func reduceNum(root *Number) {
 	executed := true
 	for executed {
 		executed = executeExplode(root, root, 1)
-		fmt.Println("After Explode: ", root)
 		if !executed {
 			executed = executedSplit(root, root)
 		}
@@ -383,7 +374,6 @@ func executedSplit(current, root *Number) bool {
 	case Value:
 		if current.Value > 9 {
 			split(current, root)
-			fmt.Println("After Split:   ", root)
 			return true
 		}
 	}
@@ -408,4 +398,33 @@ func executeExplode(current, root *Number, deep int) bool {
 	case Value:
 	}
 	return false
+}
+
+func TestSumIsNotAssociative(t *testing.T) {
+	_, a := ParseNum("[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]")
+	_, b := ParseNum("[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]")
+	c := adition(a, b)
+	d := adition(b, a)
+	if c.String() == d.String() {
+		t.Log(c.String())
+		t.Log(d.String())
+		t.Fail()
+	}
+}
+
+func TestSecondStar(t *testing.T) {
+	cases := []struct {
+		filename string
+		result   int
+	}{
+		{"example", 3993},
+		{"input", 0},
+	}
+	for _, c := range cases {
+		got := secondStar(c.filename)
+		expected := c.result
+		if expected != got {
+			t.Errorf("Expected %d,  got %d", expected, got)
+		}
+	}
 }
