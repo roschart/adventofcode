@@ -44,7 +44,7 @@ func TestFisrtStar(t *testing.T) {
 		{"example", 2, 35},
 		{"input", 2, 4964},
 		{"example", 50, 3351},
-		{"input", 50, 4964},
+		{"input", 50, 0},
 	}
 	for _, c := range cases {
 		got := firstStar(c.filename, c.loop)
@@ -87,8 +87,18 @@ func applyIEA(iea IEA, image Image) Image {
 			}
 		}
 	}
-	if iea[0] == '#' {
-		newImage.OutOfLimits = newImage.OutOfLimits ^ 1 // Invert 1 and 0
+	if image.OutOfLimits == 0 {
+		if iea[0] == '#' {
+			newImage.OutOfLimits = 1
+		} else {
+			newImage.OutOfLimits = 0
+		}
+	} else {
+		if iea[len(iea)-1] == '#' {
+			newImage.OutOfLimits = 1
+		} else {
+			newImage.OutOfLimits = 0
+		}
 	}
 	newImage.Limits.X.Min = image.Limits.X.Min - 1
 	newImage.Limits.X.Max = image.Limits.X.Max + 1
