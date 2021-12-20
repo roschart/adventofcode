@@ -94,35 +94,35 @@ func ParseCharacter(rest string) string {
 	return rest[1:]
 }
 
-func explode(current, root *Number, deep int) []*Number {
-	const Max_deep = 5
-	if deep >= Max_deep && current.Id == Pair {
-		if current.Left.Id == Value || current.Right.Id == Value {
-			fmt.Println("Exploding", current)
-			affected := sumToExtrems(current, root)
-			current = &Number{Id: Value, Value: 0}
-			fmt.Println("After Explode:", root)
-			for _, a := range affected {
-				if a.Value > 9 {
-					split(a, root)
-				}
-			}
-			return affected
-		}
+// func explode(current, root *Number, deep int) []*Number {
+// 	const Max_deep = 5
+// 	if deep >= Max_deep && current.Id == Pair {
+// 		if current.Left.Id == Value || current.Right.Id == Value {
+// 			fmt.Println("Exploding", current)
+// 			affected := sumToExtrems(current, root)
+// 			current = &Number{Id: Value, Value: 0}
+// 			fmt.Println("After Explode:", root)
+// 			for _, a := range affected {
+// 				if a.Value > 9 {
+// 					split(a, root)
+// 				}
+// 			}
+// 			return affected
+// 		}
 
-	}
-	if current.Id == Pair {
-		affected := explode(current.Left, root, deep+1)
-		if len(affected) > 0 {
-			return affected
-		}
-		if len(affected) == 0 {
-			return explode(current.Right, root, deep+1)
-		}
+// 	}
+// 	if current.Id == Pair {
+// 		affected := explode(current.Left, root, deep+1)
+// 		if len(affected) > 0 {
+// 			return affected
+// 		}
+// 		if len(affected) == 0 {
+// 			return explode(current.Right, root, deep+1)
+// 		}
 
-	}
-	return make([]*Number, 0)
-}
+// 	}
+// 	return make([]*Number, 0)
+// }
 
 func sumToExtrems(current, root *Number) (affected []*Number) {
 	vs := flat(root)
@@ -209,30 +209,6 @@ func TestParse(t *testing.T) {
 		}
 	}
 }
-
-func TestExplode(t *testing.T) {
-	cases := []struct {
-		line     string
-		expected string
-	}{
-		// {"[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]"},
-		// {"[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]"},
-		// {"[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]"},
-		// {"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"},
-		// {"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[7,0]]]]"},
-		{"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]", "[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]"},
-	}
-
-	for _, c := range cases {
-		_, n := ParseNum(c.line)
-		explode(n, n, 1)
-
-		if c.expected != n.String() {
-			t.Errorf("Expected %s, got %s", c.expected, n.String())
-		}
-	}
-}
-
 func TestSplit(t *testing.T) {
 	cases := []struct {
 		n        Number
@@ -274,7 +250,7 @@ func TestReduce(t *testing.T) {
 		a, b     string
 		expected string
 	}{
-		// {"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"},
+		{"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"},
 		{"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]", "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]", "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"},
 	}
 	for _, c := range cases {
@@ -353,6 +329,7 @@ func TestFirstStar(t *testing.T) {
 		result   int
 	}{
 		{"example", 4140},
+		{"input", 4017},
 	}
 	for _, c := range cases {
 		got := firstStart(c.filename)
@@ -385,35 +362,50 @@ func TestReduce2(t *testing.T) {
 }
 
 func reduceNum(root *Number) {
-	executed := executeAction(root, root, 1)
+	executed := true
 	for executed {
-		executed = executeAction(root, root, 1)
+		executed = executeExplode(root, root, 1)
+		fmt.Println("After Explode: ", root)
+		if !executed {
+			executed = executedSplit(root, root)
+		}
 	}
 }
 
-func executeAction(current, root *Number, deep int) bool {
+func executedSplit(current, root *Number) bool {
 	switch current.Id {
 	case Pair:
-		if current.Left.Id == Value && current.Right.Id == Value && deep >= 5 {
-			sumToExtrems(current, root)
-			current = &Number{Id: Value, Value: 0}
-			fmt.Println("After Explode: ", root)
+		r := executedSplit(current.Left, root)
+		if r {
 			return true
-		} else {
-			el := executeAction(current.Left, root, deep+1)
-			if el {
-				return true
-			}
-			er := executeAction(current.Right, root, deep+1)
-
-			return er
 		}
+		return executedSplit(current.Right, root)
 	case Value:
 		if current.Value > 9 {
 			split(current, root)
 			fmt.Println("After Split:   ", root)
 			return true
 		}
+	}
+	return false
+}
+
+func executeExplode(current, root *Number, deep int) bool {
+	switch current.Id {
+	case Pair:
+		if current.Left.Id == Value && current.Right.Id == Value && deep >= 5 {
+			sumToExtrems(current, root)
+			current = &Number{Id: Value, Value: 0}
+			return true
+		} else {
+			el := executeExplode(current.Left, root, deep+1)
+			if el {
+				return true
+			}
+			er := executeExplode(current.Right, root, deep+1)
+			return er
+		}
+	case Value:
 	}
 	return false
 }
