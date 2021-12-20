@@ -186,12 +186,8 @@ func adition(a, b *Number) *Number {
 
 func reduce(a, b *Number) *Number {
 	r := adition(a, b)
-	fmt.Println("After adition", r)
-	affected := explode(r, r, 1)
-	for len(affected) > 0 {
-
-		affected = explode(r, r, 1)
-	}
+	fmt.Println("After adition: ", r)
+	reduceNum(r)
 	return r
 }
 
@@ -278,8 +274,8 @@ func TestReduce(t *testing.T) {
 		a, b     string
 		expected string
 	}{
-		{"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]", "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]", "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"},
 		// {"[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"},
+		{"[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]", "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]", "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"},
 	}
 	for _, c := range cases {
 		_, na := ParseNum(c.a)
@@ -289,7 +285,6 @@ func TestReduce(t *testing.T) {
 		if c.expected != got.String() {
 			t.Errorf("Expected %s, got %s", c.expected, got.String())
 		}
-		t.Fail()
 	}
 }
 
@@ -381,7 +376,7 @@ func TestReduce2(t *testing.T) {
 	}
 	for _, c := range cases {
 		_, got := ParseNum(c.n)
-		reduce2(got)
+		reduceNum(got)
 
 		if c.expected != got.String() {
 			t.Errorf("Expected %s, got %s", c.expected, got.String())
@@ -389,7 +384,7 @@ func TestReduce2(t *testing.T) {
 	}
 }
 
-func reduce2(root *Number) {
+func reduceNum(root *Number) {
 	executed := executeAction(root, root, 1)
 	for executed {
 		executed = executeAction(root, root, 1)
