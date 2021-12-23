@@ -24,86 +24,102 @@ func TestFirstStar(t *testing.T) {
 
 func TestSecondStar(t *testing.T) {
 	cases := []struct {
-		player1 int
-		player2 int
-		limit   int
-		score   Score
+		position1 int
+		position2 int
+		limit     int
+		win1      int
+		win2      int
 	}{
-		{0, 0, 0, Score{0, 0}},
-		{0, 0, 1, Score{3, 0}},
-		// {0, 0, 2, Score{5, 2,}},
-		// {0, 0, 3, Score{14, 7,},
-		// {5, 5, 7, Score{5, 2},},
+		{4, 8, 21, 0, 0},
+		// {1, 1, 3, 5, 2},
+		// {1, 1, 0, 0, 1}, // This is a corner case
+		// {1, 1, 1, 3, 0},
+		// {1, 1, 2, 3, 0},
+		// {9, 9, 2, 5, 2},
 	}
 	for _, c := range cases {
-		score := seconStart(c.player1, c.player2, c.limit)
-		if c.score.SA != score.SA || c.score.SB != score.SB {
-			t.Errorf("Expected %d, %d, got %d, %d\n", c.score.SA, c.score.SB, score.SA, score.SB)
+		fmt.Printf("New test %v\n", c)
+		win1, win2 := seconStart(c.position1, c.position2, c.limit)
+		if c.win1 != win1 || c.win2 != win2 {
+			t.Errorf("Expected %d, %d, got %d, %d\n", c.win1, c.win2, win1, win2)
 		}
 	}
 }
 
 type Node struct {
-	PA, PB int
+	Position1, Position2, Score1, Score2, Turn int
 }
 
-type Score struct {
-	SA, SB int
+func fromNode(n Node) Node {
+	return Node{
+		Position1: n.Position1,
+		Position2: n.Position2,
+		Score1:    n.Score1,
+		Score2:    n.Score2,
+		Turn:      n.Turn ^ 1,
+	}
 }
 
-func seconStart(player1, player2, limit int) Score {
-	open := make(map[Node]Score)
-	close := make(map[Node]Score)
-	turn := 0 //0 player1 1 player2
-	current := Node{PA: player1, PB: player2}
-	open[current] = Score{0, 0}
+func seconStart(position1, position2, limit int) (int, int) {
+	var win1, win2 int
+	open := make(map[Node]int)
+	close := make(map[Node]int)
+	current := Node{Position1: position1, Position2: position2, Score1: 0, Score2: 0, Turn: 0}
+	open[current] = 1
 	for len(open) > 0 {
-		fmt.Printf("Nodes Open %d\n", len(open))
-		var score Score
-		current, score = getOne(open)
-		isWinner := current.PA >= limit
-		if isWinner {
-			close[current] = score
-		} else {
-			//Creating next nodes with interchengin player1 and plaer2
-			ns := []Node{
-				//winA: current.WinB, WinB: current.winA
-				{PA: current.PB, PB: current.PA + 1},
-				{PA: current.PB, PB: current.PA + 2},
-				{PA: current.PB, PB: current.PA + 2},
-			}
-			for _, n := range ns {
-				if n.PB >= limit { //isWinner
-					score.SA += 1
-				}
-				if _, ok := open[n]; ok {
-					panic("implement when in open")
-				}
-				if _, ok := close[n]; ok {
-					panic("implement when in close")
-				}
-			}
-			close[current] = score
+		var count int
+		current, count = getOne(open)
+		if count > 1 {
+
+			fmt.Printf("Nodes Open %d, current %v, with count %d\n", len(open), current, count)
 		}
-		turn = turn ^ 1
+		close[current] = count
+		isWinner := current.Score1 >= limit || current.Score2 >= limit
+		if isWinner {
+			if current.Turn == 0 {
+				win2 += count
+			} else {
+				win1 += count
+			}
+		} else {
+			ns := generateNext(current)
+			for _, n := range ns {
+				if c, ok := open[n]; ok {
+					open[n] = c + count
+				}
+				if c, ok := close[n]; ok {
+					close[n] = c + count
+				} else {
+					open[n] = count
+				}
+			}
+
+		}
 	}
-	result := sum(close)
-	if turn == 1 {
-		return Score{result.SB, result.SA}
-	}
-	return Score{result.SB, result.SA}
+	fmt.Println("Nodes analize ", len(close))
+	return win1, win2
 }
 
-func sum(close map[Node]Score) Score {
-	result := Score{}
-	for _, s := range close {
-		result.SA += s.SA
-		result.SB += s.SB
+func generateNext(current Node) []Node {
+	var ns []Node
+	for i := 1; i < 4; i++ {
+		n := fromNode(current)
+		if current.Turn == 0 {
+			p := calcuatePosition(n.Position1, i)
+			n.Score1 += p
+			n.Position1 = p
+			ns = append(ns, n)
+		} else {
+			p := calcuatePosition(n.Position2, i)
+			n.Position2 = p
+			n.Score2 += p
+			ns = append(ns, n)
+		}
 	}
-	return result
+	return ns
 }
 
-func getOne(open map[Node]Score) (Node, Score) {
+func getOne(open map[Node]int) (Node, int) {
 	for k, v := range open {
 		delete(open, k)
 		return k, v
