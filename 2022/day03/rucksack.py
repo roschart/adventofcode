@@ -55,6 +55,6 @@ def app(filename:str)->None:
   print(f"For {filename} Total2= {total2}")
 
 if __name__ == "__main__":
-  app("example")
-  app("input")
+  app("day03/example")
+  app("day03/input")
 
