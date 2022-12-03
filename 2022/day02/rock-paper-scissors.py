@@ -24,10 +24,10 @@ def reaction(round:str)-> str:
     "C Y": "C Z",
     "C Z": "C X"
     }
-  return switch.get(round, 0)
+  return switch.get(round, "")
 
 
-with open('input', mode ='r') as file:
+with open('day02/input', mode ='r') as file:
   total1:int = 0
   total2:int = 0
   lines = file.readlines()
@@ -46,4 +46,3 @@ with open('input', mode ='r') as file:
 
 print("Total1=", total1)
 print("Total2=", total2)
-
