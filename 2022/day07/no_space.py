@@ -1,5 +1,7 @@
-from typing import Any
+from typing import Any, Callable
 from dataclasses import dataclass
+
+
 
 @dataclass
 class Element:
@@ -8,6 +10,8 @@ class Element:
     size: int
     content: Any
     parent: Any
+    
+Pred=Callable[[Element], bool]
 
 def process_line(ele:Element, line:str)->Element:
     if line == "$ cd /":
@@ -45,34 +49,39 @@ def calculate_sizes(e:Element)->int:
         l= [calculate_sizes(x) for x in e.content]
         e.size=int(sum(l))
         return e.size 
-def get_dirs_at_most(ele:Element, most:int, acc:list[int])->list[int]:
+def get_dirs_by(ele:Element, acc:list[int], fun:Pred)->list[int]:
     if ele.type=="dir":
-        if ele.size<most:
+        if fun(ele):
             acc.append(ele.size)
         for e in ele.content:
-            acc=get_dirs_at_most(e, most, acc)
+            acc=get_dirs_by(e, acc, fun)
     return acc
     
     
-def app(filename:str)->tuple[int]:
+def app(filename:str)->tuple[int,int]:
     directory:Element=Element("dir", "/", -1, [], None)
     with open(filename, mode = 'r') as file:
         lines=file.readlines()
         for line in lines:
             line=line.strip()
             directory=process_line(directory,line)
-            print(line)
     parent=process_line(directory, "$ cd /")
     calculate_sizes(parent)
-    print_dir(parent)
-    r=get_dirs_at_most(parent,100000,[])
-    print(r)   
-    
-    return (sum(r),)
+    r1=get_dirs_by(parent,[],lambda e: e.size<100000)
+    #puzzle 2
+    total=70000000
+    needed=30000000
+    used=parent.size
+    required=needed-(total-used)
+    r2=get_dirs_by(parent,[],lambda e: e.size>=required)
+    return (sum(r1),min(r2))
 
 if __name__ == "__main__":
-    e1,=app("day07/example")
+    e1,e2=app("day07/example")
     if e1!=95437:
         raise ValueError("{e1}!=95437 for example")
-    i1,=app("day07/input")
+    if e2!=24933642:
+        raise ValueError("{e2}!=exected for example")
+    i1,i2=app("day07/input")
     print(f"solucion 1= {i1}")
+    print(f"solucion 1= {i2}")
