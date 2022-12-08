@@ -1,4 +1,3 @@
-from itertools import takewhile
 Forest=list[list[int]]
 
 def is_visible(forest:Forest,i:int,j:int)->bool:
