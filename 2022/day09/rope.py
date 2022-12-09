@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
+
 class Direction(Enum):
     R = "R"
     L = "L"
@@ -54,47 +55,36 @@ def move_tail(H: Point, T: Point) -> Point:
 
 def execute_move(move: Move, rope: Rope,  visited: Points) -> tuple[Rope, Points]:
     H = rope[0]
-    T = rope[1]
     if move.direction == Direction.R:
         H = Point(H.x+1, H.y)
-        T = move_tail(H, T)
     if move.direction == Direction.L:
         H = Point(H.x-1, H.y)
-        T = move_tail(H, T)
     if move.direction == Direction.U:
         H = Point(H.x, H.y+1)
-        T = move_tail(H, T)
     if move.direction == Direction.D:
         H = Point(H.x, H.y-1)
-        T = move_tail(H, T)
-    if len(rope) > 2:
-        nr, visited= execute_move(move, rope[1:], visited)
-        rope=[H]+nr
-    rope[0]=H
-    rope[1]=T
+
+    rope[0] = H
+    for i in range(len(rope)-1):
+        rope[i+1] = move_tail(rope[i], rope[i+1])
     visited.add(rope[-1])
     if move.steps > 1:
         rope, visited = execute_move(
             Move(move.direction, move.steps-1), rope, visited)
-    
-        
+
     return rope, visited
 
 
-def app(filename: str, size_rope:int) -> int:
-    rope=[]
+def app(filename: str, size_rope: int) -> int:
+    rope = []
     for i in range(size_rope):
-        rope.append(Point(0,0))
+        rope.append(Point(0, 0))
     visited: Points = set([Point(0, 0)])
     with open(filename, mode='r') as file:
         for line in file.readlines():
             line = line.strip()
             move: Move = read_move(line)
             rope, visited = execute_move(move, rope, visited)
-            print(f"after {line}")
-            print(visited)
-            print("---------")
-    print(f"Visited= {visited}")
     return len(visited)
 
 
@@ -103,6 +93,15 @@ if __name__ == "__main__":
     if e1 != 13:
         raise ValueError(
             f"Visit positions {e1} incoorrect for the example data")
-
-    # i1 = app("day09/input")
-    # print(f"Visit points {i1}")
+    e1 = app("day09/example", 10)
+    if e1 != 1:
+        raise ValueError(
+            f"Visit positions {e1} incoorrect for the example data")
+    e1 = app("day09/example2", 10)
+    if e1 != 36:
+        raise ValueError(
+            f"Visit positions {e1} incoorrect for the example data")
+    i1 = app("day09/input", 2)
+    print(f"Visit points puzzle 1= {i1}")
+    i1 = app("day09/input", 10)
+    print(f"Visit points puzzle 2 = {i1}")
