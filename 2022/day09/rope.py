@@ -81,11 +81,11 @@ def execute_move(move: Move, rope: Rope,  visited: Points) -> tuple[Rope, Points
     return rope, visited
 
 
-def app(filename: str) -> int:
+def app(filename: str, size_rope:int) -> int:
+    rope=[]
+    for i in range(size_rope):
+        rope.append(Point(0,0))
     visited: Points = set([Point(0, 0)])
-    H = Point(0, 0)
-    T = Point(0, 0)
-    rope = [H, T]
     with open(filename, mode='r') as file:
         for line in file.readlines():
             line = line.strip()
@@ -99,7 +99,7 @@ def app(filename: str) -> int:
 
 
 if __name__ == "__main__":
-    e1 = app("day09/example")
+    e1 = app("day09/example",2)
     if e1 != 13:
         raise ValueError(
             f"Visit positions {e1} incoorrect for the example data")
