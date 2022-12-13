@@ -1,7 +1,15 @@
-
+from dataclasses import dataclass
 from enum import Enum
 
 Element=list['Element']|int
+
+@dataclass
+class CompElemnt:
+    value:Element
+    def __lt__(self, other):
+        if compare(self.value,other.value)==Order.L:
+            return True
+        return False
 
 Pair=tuple[Element,Element]
 
@@ -10,9 +18,9 @@ class Order(Enum):
     E=0
     R=1
     
-def app(filename: str) -> int:
-    lines:list[str]=[]
+def puzzle1(filename: str) -> int:
     left:list[int]=[]
+    lines:list[str]=[]
     with open(filename, mode='r') as file:
         lines = [line.strip() for line in file.readlines()]
     for i in range(len(lines)//3+1):
@@ -86,14 +94,39 @@ def read_pair(lines:list[str])->Pair:
 #     if(r!=e):
 #         raise ValueError("Check fail: {r}!={e}")
 
+def puzzle2(filename: str) -> int:
+    lines:list[str]=[]
+    packets:list[CompElemnt]=[]
+    with open(filename, mode='r') as file:
+        lines = [line.strip() for line in file.readlines()]
+    for i in range(len(lines)//3+1):
+        l,r=read_pair(lines[i*3:i*3+2])
+        packets+=[CompElemnt(l),CompElemnt(r)]
+    packets+=[CompElemnt([[2]]),CompElemnt([[6]])]
+    packets.sort()
+    
+    index:list[int]=[]
+    for i in range(len(packets)):
+        v=packets[i]
+        if v.value==[[2]] or v.value==[[6]]:
+            index.append(i+1)        
+    a,b=index    
+    return a*b
+
 if __name__ == "__main__":
     # check("[]",[])
     # check("[[]]",[])
     # print("All checks passed")
     
-    r = app("day13/example")
+    r = puzzle1("day13/example")
     if r!=13:
         raise ValueError(f"{r} is not correct in the example")
-    r=app("day13/input")
-    print(f"The solutio puzzle 1 is= {r}")
+    r=puzzle1("day13/input")
+    print(f"The solution puzzle 1 is= {r}")
+    
+    r = puzzle2("day13/example")
+    if r!=140:
+        raise ValueError(f"{r} is not correct in puzzle 2 example")
+    r=puzzle2("day13/input")
+    print(f"The solution puzzle 2 is= {r}")
     
