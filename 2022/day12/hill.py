@@ -123,6 +123,9 @@ def find_path(map:Map, start:Point, end:Point)->Point:
 def puzzle1(filename:str)->int:
     lines = read_file(filename)
     map,start,end = read_map(lines)
+    return min_path_len(map, start, end)
+
+def min_path_len(map, start, end):
     n=find_path(map, start, end)
     ph=get_path(map,n)
     return len(ph)-1
@@ -135,7 +138,25 @@ def read_file(filename:str)->list[str]:
 
 def puzzle2(filename:str)->int:
     lines=read_file(filename)
-    return 0
+    map,start,end=read_map(lines)
+    solutions:set[int]=set()
+    solutions.add(min_path_len(map, start, end))
+    i:int=0
+    for r in range(41):
+        for c in range(143):
+            p=Point(r,c)
+            s= map[p].v if p in map else ""
+            if s=="a":
+                i+=1
+                print(f"{i}: resolviendo para {p} ")
+                map,start,end=read_map(lines)
+                map[start].v="a"
+                l=min_path_len(map,p,end)
+                if l<29:
+                    raise ValueError(f"Socion demasiado baja {l} para el punto {p}")
+                solutions.add(l)
+    result=sorted(solutions)[0]
+    return result
     
 if __name__=="__main__":
     r=puzzle1("day12/example")
@@ -149,3 +170,5 @@ if __name__=="__main__":
     r=puzzle2("day12/example")   
     if r!= 29:
         raise ValueError(f"The number os steps {r} in not the minimun for the example") 
+    r=puzzle2("day12/input") 
+    print(f"solution puzzle 2 is {r}")
