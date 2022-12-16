@@ -40,6 +40,8 @@ def app2(filiename: str, n:int) -> int:
             else:
                 return x*4000000+y
             x+=1
+        if y%10000==0:
+            print(f"Ejecutada linea {y}")
         
     for y in range(n+1):
         for x in range(n+1):
@@ -75,8 +77,11 @@ def in_radius_of_some(p: Point, pairs: list[Pair]) -> tuple[bool,int]:
 
     for c in pairs:
         if distance(p, c.sesor) <= c.radio():
-            d=p.x-c.sesor.x
-            return True, c.sesor.x+d
+            dy=abs(c.sesor.y-p.y)
+            r=c.radio()
+            xl=c.sesor.x-(r-dy)
+            xr=c.sesor.x+(r-dy)
+            return True, max(xl,xr)
     return False, 0
 
 
@@ -86,23 +91,23 @@ def generate_pairs(lines: list[str]) -> list[Pair]:
 
 
 if __name__ == "__main__":
-    r = app("day15/example",10)
-    if r != 26:
-        raise ValueError(f"Value {r} nod valid for example puzzle 1")
-    r = app("day15/example",11)
-    if r != 27:
-        raise ValueError(f"Value {r} nod valid for example puzzle 1")
-    r = app("day15/example",9)
-    if r != 25:
-        raise ValueError(f"Value {r} nod valid for example puzzle 1")
-    r = app("day15/input",2000000)
-    if r != 6124805:
-        raise ValueError(f"Value {r} nod valid for example puzzle 1")
+    # r = app("day15/example",10)
+    # if r != 26:
+    #     raise ValueError(f"Value {r} nod valid for example puzzle 1")
+    # r = app("day15/example",11)
+    # if r != 27:
+    #     raise ValueError(f"Value {r} nod valid for example puzzle 1")
+    # r = app("day15/example",9)
+    # if r != 25:
+    #     raise ValueError(f"Value {r} nod valid for example puzzle 1")
+    # r = app("day15/input",2000000)
+    # if r != 6124805:
+    #     raise ValueError(f"Value {r} nod valid for example puzzle 1")
     
-    # r=app2("day15/example",20)
-    # if r!=56000011:
-    #     raise ValueError(f"Value {r} nod valid for example puzzle 2")
-    # r=app2("day15/input",4000000)
-    # if r!=0:
-    #     raise ValueError(f"Value {r} nod valid for example puzzle 2")
-    # print("hello")
+    r=app2("day15/example",20)
+    if r!=56000011:
+        raise ValueError(f"Value {r} nod valid for example puzzle 2")
+    r=app2("day15/input",4000000)
+    if r!=12555527364986:
+        raise ValueError(f"Value {r} nod valid for example puzzle 2")
+    print("Day 15 solved")
