@@ -5,7 +5,6 @@ import re
 
 Id = str
 
-
 @dataclass
 class Node:
     id: Id
@@ -14,7 +13,6 @@ class Node:
 
     def open(self) -> None:
         self.__open = True
-
 
 class Action(Enum):
     Move = 0
@@ -29,6 +27,7 @@ class State:
     timer: int
     free: int
     potential: int
+    parent: Id
 
     def current(self) -> Node:
         return self.nodes[self.postion]
@@ -36,9 +35,10 @@ class State:
     def next_states(self) -> list['State']:
         c = self.current()
         ns: list[State] = []
-        # You can alwasy move
+        # You can alwasy move but not if is previous one
         for n in c.next:
-            ns.append(self.move(n))
+            if n != self.last_position:
+                ns.append(self.move(n))
         if c.id in self.pending and c.rate > 0 and self.last_action == Action.Move:
             ns.append(self.open())
         return ns
@@ -49,13 +49,15 @@ class State:
                  postion: Id,
                  timer: int,
                  free: int,
-                 potential: int = 0) -> None:
+                 potential: int,
+                 last_postion: Id) -> None:
         self.nodes = nodes
         self.pending = pending
         self.last_action = last_action
         self.postion = postion
         self.timer = timer
         self.free = free
+        self.last_position=last_postion
 
         if potential == 0:
             pending_rates = [self.nodes[id].rate for id in pending]
@@ -74,7 +76,7 @@ class State:
         free = c.rate*(self.timer-1)
         potencial = self.free + free+sum(
             [a*b for a, b in zip(pending_rates, range(self.timer-3, -1, -2))])
-        return State(self.nodes, pending, Action.Open, self.postion, self.timer-1, self.free+free, potencial)
+        return State(self.nodes, pending, Action.Open, self.postion, self.timer-1, self.free+free, potencial,self.postion)
 
     def move(self, id: Id) -> 'State':
         c = self.current()
@@ -84,7 +86,7 @@ class State:
         timer = self.timer-2
         potencial = self.free + sum(
             [a*b for a, b in zip(pending_rates, range(timer, -1, -2))])
-        return State(self.nodes, pending, Action.Move, id, self.timer-1, self.free, potencial)
+        return State(self.nodes, pending, Action.Move, id, self.timer-1, self.free, potencial,self.postion)
 
     def __repr__(self) -> str:
         return f"{{{self.last_action}[{self.postion}], {self.pending},t={self.timer}, f={self.free}, p={self.potential}}}"
@@ -98,12 +100,14 @@ def get_best(xs: list[State]) -> State:
 
 def find(init: State)->int:
     open = init.next_states()
-    print("open", open)
+    i=-1
     while open:
+        i+=1
         cs = get_best(open)
-        print("best1", cs)
+        if i%1000==0:
+            print(f"best {i}: {cs}, l_open={len(open)}")
+
         ns = cs.next_states()
-        print("nexts1", ns)
         for n in ns:
             open.append(n)
             open = [o for o in open if o.potential > n.free]
@@ -123,7 +127,7 @@ def puzzle1(filename:str)->int:
             pending=pending.union(p)
             if first=="":
                 first=n.id
-    INIT= State(nodes,pending,Action.Move,first,30,0)
+    INIT= State(nodes,pending,Action.Move,first,30,0,0,first)
     return find(INIT)
 
 def process_line(line:str)-> tuple[Node, set[Id]]:
@@ -144,9 +148,11 @@ def process_line(line:str)-> tuple[Node, set[Id]]:
 if __name__=="__main__":
     r=puzzle1("day16/example")
     if r!=1651:
-        raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1")
-    print("HOla")
-
+        raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 example")
+    r=puzzle1("day16/input")
+    if r!=0:
+        raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 puzzle")
+    print("fin")
 # a = Node('a', 5)
 # b = Node('b', 20)
 # c = Node ('c', 15)
