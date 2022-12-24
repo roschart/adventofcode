@@ -150,8 +150,8 @@ if __name__=="__main__":
     if r!=1651:
         raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 example")
     r=puzzle1("day16/input")
-    if r!=0:
-        raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 puzzle")
+    if r<=1613:
+        raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 imput")
     print("fin")
 # a = Node('a', 5)
 # b = Node('b', 20)
