@@ -39,16 +39,30 @@ def is_posible(game:Game)->bool:
             return False
     return True
 
-def process_posible(game:Game, acc:int=0)->int:
+def process_posible(game:Game, acc:int)->int:
     if is_posible(game):
         acc+=game.id
     return acc
 
+def process_potential(game:Game,acc:int)->int:
+    potential=Set()
+    for s in game.sets:
+        if s.red>potential.red:
+            potential.red=s.red
+        if s.blue>potential.blue:
+            potential.blue=s.blue
+        if s.green>potential.green:
+            potential.green=s.green
+    value=potential.red*potential.green*potential.blue
+    return value+acc
 
 g1=Game.from_string("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
 
 if not is_posible(g1):
     raise Exception("g1 must be posible")
+
+if process_potential(g1,0)!=48:
+    raise Exception("g1 potential !=48")
 
 
 def process_file(filename:str, proc: Callable[[Game,int],int] )->int:
@@ -70,3 +84,14 @@ s1=process_file("02/input",process_posible)
 expected=2632
 if s1!=expected:
     raise Exception(f"{s1}!={expected}")
+
+
+e2=process_file("02/example",process_potential)
+expected=2286
+if e2!=expected:
+    raise Exception(f"{e2}!={expected}")
+
+s2=process_file("02/input",process_potential)
+expected=69629
+if s2!=expected:
+    raise Exception(f"{s2}!={expected}")
