@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable
+from typing import Callable,Optional
 import re
 
 Id = str
@@ -27,7 +27,7 @@ class State:
     timer: int
     free: int
     potential: int
-    parent: Id
+    parent: Optional['State']
 
     def current(self) -> Node:
         return self.nodes[self.postion]
@@ -37,7 +37,7 @@ class State:
         ns: list[State] = []
         # You can alwasy move but not if is previous one
         for n in c.next:
-            if n != self.last_position:
+            if  self.parent is None or n != self.parent.postion:
                 ns.append(self.move(n))
         if c.id in self.pending and c.rate > 0 and self.last_action == Action.Move:
             ns.append(self.open())
@@ -50,14 +50,14 @@ class State:
                  timer: int,
                  free: int,
                  potential: int,
-                 last_postion: Id) -> None:
+                 parent:Optional['State'] ) -> None:
         self.nodes = nodes
         self.pending = pending
         self.last_action = last_action
         self.postion = postion
         self.timer = timer
         self.free = free
-        self.last_position=last_postion
+        self.parent=parent
 
         if potential == 0:
             pending_rates = [self.nodes[id].rate for id in pending]
@@ -76,7 +76,7 @@ class State:
         free = c.rate*(self.timer-1)
         potencial = self.free + free+sum(
             [a*b for a, b in zip(pending_rates, range(self.timer-3, -1, -2))])
-        return State(self.nodes, pending, Action.Open, self.postion, self.timer-1, self.free+free, potencial,self.postion)
+        return State(self.nodes, pending, Action.Open, self.postion, self.timer-1, self.free+free, potencial,self)
 
     def move(self, id: Id) -> 'State':
         c = self.current()
@@ -86,7 +86,7 @@ class State:
         timer = self.timer-2
         potencial = self.free + sum(
             [a*b for a, b in zip(pending_rates, range(timer, -1, -2))])
-        return State(self.nodes, pending, Action.Move, id, self.timer-1, self.free, potencial,self.postion)
+        return State(self.nodes, pending, Action.Move, id, self.timer-1, self.free, potencial,self)
 
     def __repr__(self) -> str:
         return f"{{{self.last_action}[{self.postion}], {self.pending},t={self.timer}, f={self.free}, p={self.potential}}}"
@@ -98,7 +98,7 @@ def get_best(xs: list[State]) -> State:
     return xs.pop()
 
 
-def find(init: State)->int:
+def find(init: State)->State:
     open = init.next_states()
     i=-1
     while open:
@@ -112,23 +112,37 @@ def find(init: State)->int:
             open.append(n)
             open = [o for o in open if o.potential > n.free]
             if not open:
-                return n.free
+                return n
     raise ValueError("Bad end of while loop")
 
 
 def puzzle1(filename:str)->int:
     nodes: dict[Id, Node]=dict()
     pending: set[Id]=set()
-    first:str=""
     with open(filename, mode='r') as file:
         for line  in file.readlines():
             n,p= process_line(line.strip())
             nodes[n.id]=n
             pending=pending.union(p)
-            if first=="":
-                first=n.id
-    INIT= State(nodes,pending,Action.Move,first,30,0,0,first)
-    return find(INIT)
+
+    INIT= State(nodes,pending,Action.Move,'AA',30,0,0,None)
+    last=find(INIT)
+    print_path(last)
+    return last.free
+
+def print_path(last:State):
+    xs:list[State]=[]
+    xs.append(last)
+    while last.parent!=None:
+        assert last.parent is not None
+        last=last.parent
+        xs.append(last)
+    xs.reverse()
+    print("El Camino")
+    for x in xs:
+        print(x)
+        
+    
 
 def process_line(line:str)-> tuple[Node, set[Id]]:
 
@@ -149,19 +163,7 @@ if __name__=="__main__":
     r=puzzle1("day16/example")
     if r!=1651:
         raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 example")
-    r=puzzle1("day16/input")
-    if r<=1613:
-        raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 imput")
-    print("fin")
-# a = Node('a', 5)
-# b = Node('b', 20)
-# c = Node ('c', 15)
-# a.next = [b.id]
-# b.next = [a.id,c.id]
-# c.next = [b.id]
-
-# INIT = State({a.id: a, b.id: b, c.id:c}, {a.id, b.id, c.id}, Action.Move, a.id, 30, 0)
-# print("----------------")
-# print(f"INIT={INIT}")
-# s=find(INIT)
-# print(f"solución={s}")
+    # r=puzzle1("day16/input")
+    # if r>=1854:
+    #     raise ValueError(f"Presión libreada {r} es incorrecta en puzzle1 imput")
+    # print("fin")
