@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from enum import Enum, auto
 
 
@@ -19,6 +19,19 @@ class State(Enum):
     VALIDATING = auto()
     VALID = auto()
 
+
+
+def neighbors(sch: schema, row:int, init: int, end: int)->Dict[Tuple[int,int],str]:
+    result: Dict[Tuple[int,int],str]=dict()
+    coors=[[row-1,x] for x in range(init-1,end+1)]
+    coors+=[[row,init-1]]+[[row,end]]
+    coors+=[[row+1,x] for x in range(init-1,end+1)]
+    for coor in coors:
+        r=coor[0]
+        c=coor[1]
+        if r >= 0 and r < len(sch) and c >= 0 and c < len(sch[0]):
+            result[(r,c)]=sch[r][c]
+    return result
 
 def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool]:
      
