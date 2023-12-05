@@ -39,14 +39,23 @@ def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool]:
     coors+=[[row,init-1]]+[[row,end]]
     coors+=[[row+1,x] for x in range(init-1,end+1)]
     
-    for coor in coors:
-        r=coor[0]
-        c=coor[1]
-        if r >= 0 and r < len(sch) and c >= 0 and c < len(sch[0]):
-            v=sch[r][c]
-            if not v.isdigit() and v!=".":
-                return (True,) 
-    return (False,)
+    ns=neighbors(sch, row, init, end)
+    
+    good=False
+    for k,v in ns.items():
+        if not v.isdigit() and v!=".":
+            good=True
+    return (good,)
+        
+    
+    # for coor in coors:
+    #     r=coor[0]
+    #     c=coor[1]
+    #     if r >= 0 and r < len(sch) and c >= 0 and c < len(sch[0]):
+    #         v=sch[r][c]
+    #         if not v.isdigit() and v!=".":
+    #             return (True,) 
+    # return (False,)
 
 
 def get_numbers(sch: schema, row: int) -> List[int]:
