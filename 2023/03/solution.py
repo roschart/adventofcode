@@ -33,30 +33,25 @@ def neighbors(sch: schema, row:int, init: int, end: int)->Dict[Tuple[int,int],st
             result[(r,c)]=sch[r][c]
     return result
 
-def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool]:
+def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool,Dict[Tuple[int,int],int]]:
      
     coors=[[row-1,x] for x in range(init-1,end+1)]
     coors+=[[row,init-1]]+[[row,end]]
     coors+=[[row+1,x] for x in range(init-1,end+1)]
     
     ns=neighbors(sch, row, init, end)
+    posible_gears:Dict[Tuple[int,int],int]=dict()
     
     good=False
     for k,v in ns.items():
         if not v.isdigit() and v!=".":
             good=True
-    return (good,)
+        if v=="*":
+            posible_gears[k]=posible_gears.get(k, 0) + 1
+    return (good,posible_gears)
         
     
-    # for coor in coors:
-    #     r=coor[0]
-    #     c=coor[1]
-    #     if r >= 0 and r < len(sch) and c >= 0 and c < len(sch[0]):
-    #         v=sch[r][c]
-    #         if not v.isdigit() and v!=".":
-    #             return (True,) 
-    # return (False,)
-
+  
 
 def get_numbers(sch: schema, row: int) -> List[int]:
     line = sch[row]
