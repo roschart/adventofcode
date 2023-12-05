@@ -75,22 +75,33 @@ def get_numbers(sch: schema, row: int) -> List[int]:
     return result
 
 
-sch = read_schema("03/example")
-e1=0
-for r in range(len(sch)):
-    numbers=get_numbers(sch,r)
-    print(numbers)
-    e1+=sum(numbers)
+def solution(filename:str)->int:
+    sch = read_schema(filename)
+    total=0
+    for r in range(len(sch)):
+        numbers=get_numbers(sch,r)
+        total+=sum(numbers)
+    return total
 
-if e1!=4361:
-    raise Exception("In exaple 1")
+# sch = read_schema("03/example")
+# e1=0
+# for r in range(len(sch)):
+#     numbers=get_numbers(sch,r)
+#     e1+=sum(numbers)
+e1=solution("03/example")
+expected=4361
+if e1!=expected:
+    raise Exception(f"In exaple 1!={expected}")
+
+
+s1=solution("03/input")
+expected=535078
+if s1!=expected:
+    raise Exception(f"Solution {s1}!={expected}")
 
 
 sch = read_schema("03/input")
 e1=0
 for r in range(len(sch)):
     numbers=get_numbers(sch,r)
-    print(numbers)
     e1+=sum(numbers)
-
-print(e1)
