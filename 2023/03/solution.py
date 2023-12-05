@@ -35,11 +35,13 @@ def neighbors(sch: schema, row:int, init: int, end: int)->Dict[Tuple[int,int],st
 
 
 def wrapper_validate(func:Callable[[schema,int,int,int],Tuple[bool,Dict[Tuple[int,int],int]]])->Callable[[schema,int,int,int],Tuple[bool,Dict[Tuple[int,int],List[int]]]]:
-    gears:Dict[Tuple[int,int],List[int]]=dict()
     def inner(sch: schema, row:int, init: int, end: int, gears:bool=False)->Tuple[bool,Dict[Tuple[int,int],List[int]]]:
         if not gears:
             v,g= func(sch, row, init, end)
-        return (v,dict())
+            for k,value in g.items():
+                inner.gears[k]=inner.gears.get(k,[])+[value]
+        return (v,inner.gears)
+    inner.gears:Dict[Tuple[int,int],List[int]]=dict()
     return inner
         
 @wrapper_validate
