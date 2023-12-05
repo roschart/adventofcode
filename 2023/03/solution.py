@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from enum import Enum, auto
 
 
@@ -20,7 +20,7 @@ class State(Enum):
     VALID = auto()
 
 
-def validate(sch: schema, row:int, init: int, end: int) -> bool:
+def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool]:
      
     coors=[[row-1,x] for x in range(init-1,end+1)]
     coors+=[[row,init-1]]+[[row,end]]
@@ -32,8 +32,8 @@ def validate(sch: schema, row:int, init: int, end: int) -> bool:
         if r >= 0 and r < len(sch) and c >= 0 and c < len(sch[0]):
             v=sch[r][c]
             if not v.isdigit() and v!=".":
-                return True 
-    return False
+                return (True,) 
+    return (False,)
 
 
 def get_numbers(sch: schema, row: int) -> List[int]:
@@ -54,7 +54,7 @@ def get_numbers(sch: schema, row: int) -> List[int]:
         if state == State.GETTING_NUMBER:
             if not v.isdigit():
                 end=column
-                if validate(sch,row,init,end):
+                if validate(sch,row,init,end)[0]:
                     result.append(int(number))
                 state=State.NO_NUMBER
                 number=""
@@ -63,12 +63,12 @@ def get_numbers(sch: schema, row: int) -> List[int]:
                 number += v
                 if column==len(line)-1:
                     end=column
-                    if validate(sch,row,init,end):
+                    if validate(sch,row,init,end)[0]:
                         result.append(int(number))
                         # state=State.NO_NUMBER
                         # number=""
                 continue
-            if validate(sch,row,init,end):
+            if validate(sch,row,init,end)[0]:
                 result.append(int(number))
             state=State.NO_NUMBER
             number=""
@@ -83,11 +83,6 @@ def solution(filename:str)->int:
         total+=sum(numbers)
     return total
 
-# sch = read_schema("03/example")
-# e1=0
-# for r in range(len(sch)):
-#     numbers=get_numbers(sch,r)
-#     e1+=sum(numbers)
 e1=solution("03/example")
 expected=4361
 if e1!=expected:
