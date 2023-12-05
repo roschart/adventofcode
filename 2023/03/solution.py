@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import Callable, Dict,List, Tuple 
 from enum import Enum, auto
 
 
@@ -33,27 +33,33 @@ def neighbors(sch: schema, row:int, init: int, end: int)->Dict[Tuple[int,int],st
             result[(r,c)]=sch[r][c]
     return result
 
-def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool,Dict[Tuple[int,int],List[int]]]:
+
+def wrapper_validate(func:Callable[[schema,int,int,int],Tuple[bool,Dict[Tuple[int,int],int]]])->Callable[[schema,int,int,int],Tuple[bool,Dict[Tuple[int,int],List[int]]]]:
+    gears:Dict[Tuple[int,int],List[int]]=dict()
+    def inner(sch: schema, row:int, init: int, end: int, gears:bool=False)->Tuple[bool,Dict[Tuple[int,int],List[int]]]:
+        if not gears:
+            v,g= func(sch, row, init, end)
+        return (v,dict())
+    return inner
+        
+@wrapper_validate
+def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool,Dict[Tuple[int,int],int]]:
      
     coors=[[row-1,x] for x in range(init-1,end+1)]
     coors+=[[row,init-1]]+[[row,end]]
     coors+=[[row+1,x] for x in range(init-1,end+1)]
     
     ns=neighbors(sch, row, init, end)
-    posible_gears:Dict[Tuple[int,int],List[int]]=dict()
+    posible_gears:Dict[Tuple[int,int],int]=dict()
     good=False
     for k,v in ns.items():
         if not v.isdigit() and v!=".":
             good=True
         if v=="*":
-            posible_gears[k]=posible_gears.get(k, []) + [int(sch[row][init:end])]
+            posible_gears[k]=int(sch[row][init:end])
     return (good,posible_gears)
         
-def wrapper_validate(sch: schema, row:int, init: int, end: int, resume:bool=False):
-    gears:Dict[Tuple[int,int],List[int]]=dict()
-    if init:
-        return True
-    return 2
+
     
   
 
