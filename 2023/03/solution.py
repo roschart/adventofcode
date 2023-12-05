@@ -33,23 +33,27 @@ def neighbors(sch: schema, row:int, init: int, end: int)->Dict[Tuple[int,int],st
             result[(r,c)]=sch[r][c]
     return result
 
-def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool,Dict[Tuple[int,int],int]]:
+def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool,Dict[Tuple[int,int],List[int]]]:
      
     coors=[[row-1,x] for x in range(init-1,end+1)]
     coors+=[[row,init-1]]+[[row,end]]
     coors+=[[row+1,x] for x in range(init-1,end+1)]
     
     ns=neighbors(sch, row, init, end)
-    posible_gears:Dict[Tuple[int,int],int]=dict()
-    
+    posible_gears:Dict[Tuple[int,int],List[int]]=dict()
     good=False
     for k,v in ns.items():
         if not v.isdigit() and v!=".":
             good=True
         if v=="*":
-            posible_gears[k]=posible_gears.get(k, 0) + 1
+            posible_gears[k]=posible_gears.get(k, []) + [int(sch[row][init:end])]
     return (good,posible_gears)
         
+def wrapper_validate(sch: schema, row:int, init: int, end: int, resume:bool=False):
+    gears:Dict[Tuple[int,int],List[int]]=dict()
+    if init:
+        return True
+    return 2
     
   
 
