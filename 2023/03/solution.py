@@ -1,6 +1,8 @@
 from typing import Callable, Dict,List, Tuple 
 from enum import Enum, auto
 
+import math as m, re
+
 
 schema = List[str]
 
@@ -36,6 +38,7 @@ def neighbors(sch: schema, row:int, init: int, end: int)->Dict[Tuple[int,int],st
 
 def wrapper_validate(func:Callable[[schema,int,int,int],Tuple[bool,Dict[Tuple[int,int],int]]])->Callable[[schema,int,int,int],Tuple[bool,Dict[Tuple[int,int],List[int]]]]:
     def inner(sch: schema, row:int, init: int, end: int, gears:bool=False)->Tuple[bool,Dict[Tuple[int,int],List[int]]]:
+        v=False
         if not gears:
             v,g= func(sch, row, init, end)
             for k,value in g.items():
@@ -61,7 +64,7 @@ def validate(sch: schema, row:int, init: int, end: int) -> Tuple[bool,Dict[Tuple
             posible_gears[k]=int(sch[row][init:end])
     return (good,posible_gears)
         
-
+validate.gears:Dict[Tuple[int,int],List[int]]=dict()
     
   
 
@@ -92,10 +95,8 @@ def get_numbers(sch: schema, row: int) -> List[int]:
                 number += v
                 if column==len(line)-1:
                     end=column
-                    if validate(sch,row,init,end)[0]:
+                    if validate(sch,row,init,end+1)[0]:
                         result.append(int(number))
-                        # state=State.NO_NUMBER
-                        # number=""
                 continue
             if validate(sch,row,init,end)[0]:
                 result.append(int(number))
@@ -112,20 +113,52 @@ def solution(filename:str)->int:
         total+=sum(numbers)
     return total
 
-e1=solution("03/example")
-expected=4361
-if e1!=expected:
+def solution2(filename:str)->int:
+    validate.gears=dict()
+    sch = read_schema(filename)
+    for r in range(len(sch)):
+        get_numbers(sch,r)
+    total=0
+    n_ast=sum([l.count('*') for l in sch])
+    if len(validate.gears)!=n_ast:
+        raise Exception(f"len gears {len(validate.gears)} != {n_ast}")
+    for c,ns in validate.gears.items():
+        if len(ns)==2:
+            a,b=ns
+            total+=a*b
+    return total
+
+# e1=solution("03/example")
+# expected=4361
+# if e1!=expected:
+#     raise Exception(f"In exaple 1!={expected}")
+
+
+# s1=solution("03/input")
+# expected=535078
+# if s1!=expected:
+#     raise Exception(f"Solution {s1}!={expected}")
+
+
+# sch = read_schema("03/input")
+# e1=0
+# for r in range(len(sch)):
+#     numbers=get_numbers(sch,r)
+#     e1+=sum(numbers)
+
+e2= solution2("03/example")
+expected=467835
+if e2!=expected:
     raise Exception(f"In exaple 1!={expected}")
 
+s2=solution2("03/input")
+expected=75312571
+if s2!=expected:
+    raise Exception(f"In exaple s2 !={expected}")
 
-s1=solution("03/input")
-expected=535078
-if s1!=expected:
-    raise Exception(f"Solution {s1}!={expected}")
+    
 
 
-sch = read_schema("03/input")
-e1=0
-for r in range(len(sch)):
-    numbers=get_numbers(sch,r)
-    e1+=sum(numbers)
+
+
+        
