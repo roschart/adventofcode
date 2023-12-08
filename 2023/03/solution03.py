@@ -23,11 +23,12 @@ class State(Enum):
     VALID = auto()
 
 
-def neighbors(sch: schema, row: int, init: int, end: int) -> Dict[Tuple[int, int], str]:
+def neighbors(sch: schema, row: int, init: int,
+              end: int) -> Dict[Tuple[int, int], str]:
     result: Dict[Tuple[int, int], str] = dict()
-    coors = [[row-1, x] for x in range(init-1, end+1)]
-    coors += [[row, init-1]]+[[row, end]]
-    coors += [[row+1, x] for x in range(init-1, end+1)]
+    coors = [[row - 1, x] for x in range(init - 1, end + 1)]
+    coors += [[row, init - 1]] + [[row, end]]
+    coors += [[row + 1, x] for x in range(init - 1, end + 1)]
     for coor in coors:
         r = coor[0]
         c = coor[1]
@@ -36,24 +37,40 @@ def neighbors(sch: schema, row: int, init: int, end: int) -> Dict[Tuple[int, int
     return result
 
 
-def wrapper_validate(func: Callable[[schema, int, int, int], Tuple[bool, Dict[Tuple[int, int], int]]]) -> Callable[[schema, int, int, int], Tuple[bool, Dict[Tuple[int, int], List[int]]]]:
-    def inner(sch: schema, row: int, init: int, end: int, gears: bool = False) -> Tuple[bool, Dict[Tuple[int, int], List[int]]]:
+def wrapper_validate(func: Callable[[schema,
+                                     int,
+                                     int,
+                                     int],
+                                    Tuple[bool,
+                                          Dict[Tuple[int,
+                                                     int],
+                                               int]]]) -> Callable[[schema,
+                                                                    int,
+                                                                    int,
+                                                                    int],
+                                                                   Tuple[bool,
+                                                                         Dict[Tuple[int,
+                                                                                    int],
+                                                                              List[int]]]]:
+    def inner(sch: schema, row: int, init: int, end: int,
+              gears: bool = False) -> Tuple[bool, Dict[Tuple[int, int], List[int]]]:
         v = False
         if not gears:
             v, g = func(sch, row, init, end)
             for k, value in g.items():
-                inner.gears[k] = inner.gears.get(k, [])+[value]
+                inner.gears[k] = inner.gears.get(k, []) + [value]
         return (v, inner.gears)
     inner.gears: Dict[Tuple[int, int], List[int]] = dict()
     return inner
 
 
 @wrapper_validate
-def validate(sch: schema, row: int, init: int, end: int) -> Tuple[bool, Dict[Tuple[int, int], int]]:
+def validate(sch: schema, row: int, init: int,
+             end: int) -> Tuple[bool, Dict[Tuple[int, int], int]]:
 
-    coors = [[row-1, x] for x in range(init-1, end+1)]
-    coors += [[row, init-1]]+[[row, end]]
-    coors += [[row+1, x] for x in range(init-1, end+1)]
+    coors = [[row - 1, x] for x in range(init - 1, end + 1)]
+    coors += [[row, init - 1]] + [[row, end]]
+    coors += [[row + 1, x] for x in range(init - 1, end + 1)]
 
     ns = neighbors(sch, row, init, end)
     posible_gears: Dict[Tuple[int, int], int] = dict()
@@ -94,9 +111,9 @@ def get_numbers(sch: schema, row: int) -> List[int]:
                 continue
             if v.isdigit():
                 number += v
-                if column == len(line)-1:
+                if column == len(line) - 1:
                     end = column
-                    if validate(sch, row, init, end+1)[0]:
+                    if validate(sch, row, init, end + 1)[0]:
                         result.append(int(number))
                 continue
             if validate(sch, row, init, end)[0]:
@@ -127,7 +144,7 @@ def solution2(filename: str) -> int:
     for c, ns in validate.gears.items():
         if len(ns) == 2:
             a, b = ns
-            total += a*b
+            total += a * b
     return total
 
 # e1=solution("03/example")

@@ -59,8 +59,8 @@ def process_potential(game: Game, acc: int) -> int:
             potential.blue = s.blue
         if s.green > potential.green:
             potential.green = s.green
-    value = potential.red*potential.green*potential.blue
-    return value+acc
+    value = potential.red * potential.green * potential.blue
+    return value + acc
 
 
 g1 = Game.from_string("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")

@@ -11,8 +11,8 @@ asterisks = {(r, c): [] for r in range(rs)
 
 
 def updateAsteriskNeighbors(asterisks, r, n):
-    edge = {(r, c) for r in (r-1, r, r+1)
-            for c in range(n.start()-1, n.end()+1)}
+    edge = {(r, c) for r in (r - 1, r, r + 1)
+            for c in range(n.start() - 1, n.end() + 1)}
     for o in edge & asterisks.keys():
         asterisks[o].append(int(n.group()))
 

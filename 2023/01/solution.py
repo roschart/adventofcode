@@ -13,7 +13,7 @@ def solve1(filename: str) -> int:
             digits = [x for x in line if x >= "0" and x <= "9"]
             first = digits[:1]
             last = digits[-1:]
-            n = "".join(first+last)
+            n = "".join(first + last)
             total += int(n)
     return total
 
@@ -32,9 +32,9 @@ def solve2(filename: str) -> int:
                 raise Exception
             d = m.group()
             if d.isdigit():
-                n = int(d)*10
+                n = int(d) * 10
             else:
-                n = word_to_num[d]*10
+                n = word_to_num[d] * 10
             rl = line[::-1]
             m = re.search(rregex, rl)
             d = m.group()
