@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
-from enum import Enum, auto
+from enum import Enum
 from collections import Counter
-from math import prod
 
 
 class TypeHand(Enum):
@@ -16,7 +14,7 @@ class TypeHand(Enum):
 
 
 file = "07/input"
-lines = [l.strip() for l in open(file)]
+lines = [line.strip() for line in open(file)]
 
 
 @dataclass
@@ -87,7 +85,11 @@ class Round:
         return self.hand < other.hand
 
 
-rounds = [Round(Hand(x[0]), int(x[1])) for l in lines for x in [l.split(" ")]]
+rounds = [
+    Round(Hand(x[0]), int(x[1]))
+    for line in lines
+    for x in [line.split(" ")]
+]
 
 s = sum((i + 1) * r.bind for i, r in enumerate(sorted(rounds)))
 
