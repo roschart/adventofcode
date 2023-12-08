@@ -89,7 +89,7 @@ class Round:
 
 rounds = [Round(Hand(x[0]), int(x[1])) for l in lines for x in [l.split(" ")]]
 
-s = sum((i+1)*r.bind for i, r in enumerate(sorted(rounds)))
+s = sum((i + 1) * r.bind for i, r in enumerate(sorted(rounds)))
 
 if file == "07/example" and s != 6440:
     raise Exception
