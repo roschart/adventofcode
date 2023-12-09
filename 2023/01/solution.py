@@ -26,7 +26,6 @@ def solve2(filename: str) -> int:
         for line in f:
             line = line.strip()
             n = 0
-            o = line[:]
             m = re.search(regex, line)
             if m is None:
                 raise Exception
@@ -37,6 +36,8 @@ def solve2(filename: str) -> int:
                 n = word_to_num[d] * 10
             rl = line[::-1]
             m = re.search(rregex, rl)
+            if m is None:
+                raise Exception
             d = m.group()
             if m is None:
                 raise Exception
@@ -48,22 +49,22 @@ def solve2(filename: str) -> int:
     return total
 
 
-s1 = solve1("example.data")
+s1 = solve1("01/example.data")
 expected = 142
 if s1 != expected:
     raise ValueError(f"The {s1}!=={expected}")
 
 
-d1 = solve1("input")
+d1 = solve1("01/input")
 print(d1)
 
 
-s2 = solve2("example2.data")
+s2 = solve2("01/example2.data")
 expected = 281
 if s2 != expected:
     raise ValueError(f"The {s1}!=={expected}")
 
-d2 = solve2("input")
+d2 = solve2("01/input")
 expected = 53539
 send = 53551
 if d2 == send:
