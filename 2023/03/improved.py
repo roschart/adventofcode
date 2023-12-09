@@ -6,8 +6,8 @@ from math import prod
 board = [line.strip() for line in open('03/input')]
 rs = len(board)
 cs = len(board[0])
-asterisks = {(r, c): [] for r in range(rs)
-             for c in range(cs) if board[r][c] == "*"}
+asterisks: dict = {(r, c): [] for r in range(rs)
+                   for c in range(cs) if board[r][c] == "*"}
 
 
 def updateAsteriskNeighbors(asterisks, r, n):
