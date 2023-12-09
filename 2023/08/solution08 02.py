@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict, List
+import math
 
 
 @dataclass
@@ -40,23 +41,29 @@ def check_end(currents: List[str]) -> bool:
 
 
 currents = get_currents()
-count = 0
-cont = True
-while cont:
-    for m in moves:
-        count += 1
-        if m == "L":
-            for i, current in enumerate(currents):
-                currents[i] = map[current].L
-        else:
-            for i, current in enumerate(currents):
-                currents[i] = map[current].R
-        if check_end(currents):
+solutions: List[int] = []
+for current in currents:
+    count = 0
+    cont = True
+    while cont:
+        for m in moves:
+            count += 1
+            if m == "L":
+                current = map[current].L
+            else:
+                current = map[current].R
+        if current[-1] == "Z":
+            solutions.append(count)
             cont = False
-            break
-if file == "08/example3" and count != 6:
+
+s = math.lcm(*solutions)
+
+if file == "08/example3" and s != 6:
+    print(solutions)
+    print(s)
     raise Exception
 
-if file == "08/input" and count != 6:
-    raise Exception(f"count={count}")
-
+if file == "08/input" and s != 12833235391111:
+    print(solutions)
+    print(s)
+    raise Exception
