@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, Set, Tuple
+from typing import Dict, Set, Tuple
 import sys
 
 Coord = Tuple[int, int]
@@ -73,10 +73,14 @@ def get_loop(map: Map, init: Coord) -> Set[Coord]:
         current = s.pop()
 
 
-example = "10/example1"
-file = example
+example1 = "10/example1"
+example2 = "10/example2"
+input = "10/input"
+file = input
 
 diagram = [line.strip() for line in open(file)]
+rows = len(diagram)
+columns = len(diagram[0])
 
 
 map: Map = {(r, c): v for r, row in enumerate(diagram)
@@ -90,9 +94,17 @@ loop = get_loop(map, init)
 for line in diagram:
     print(line)
 print("----")
-print_map(map, loop, 5, 5)
+print_map(map, loop, rows, columns)
 
 s = len(loop)/2
 
-if file == example and s != 4:
+if file == example1 and s != 4:
     raise Exception(f"{s}")
+
+if file == example2 and s != 8:
+    raise Exception(f"{s}")
+
+
+if file == input and s != 0:
+    raise Exception(f"{s}")
+
