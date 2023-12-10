@@ -105,6 +105,5 @@ if file == example2 and s != 8:
     raise Exception(f"{s}")
 
 
-if file == input and s != 0:
+if file == input and s != 6907:
     raise Exception(f"{s}")
-
