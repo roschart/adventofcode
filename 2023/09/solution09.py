@@ -26,7 +26,8 @@ example = "09/example"
 file = example
 row_data = [lines.strip() for lines in open(file)]
 
-reports = [[int(num) for num in re.findall(r"\d+", line)] for line in row_data]
+reports = [[int(num) for num in re.findall(r"-?\d+", line)]
+           for line in row_data]
 
 s = sum(nexts(reports))
 if file == example and s != 114:
