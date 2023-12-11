@@ -2,6 +2,16 @@ from enum import Enum
 from typing import Dict, Set, Tuple
 import sys
 
+example1 = "10/example1"
+example2 = "10/example2"
+example3 = "10/example3"
+example4 = "10/example4"
+example5 = "10/example5"
+example6 = "10/example6"
+input = "10/input"
+file = input
+
+
 Coord = Tuple[int, int]
 Map = Dict[Coord, str]
 
@@ -81,18 +91,19 @@ def traped(map: Map, path: Set[Coord], x: int, y: int) -> Set[Coord]:
         for j in range(y):
             k = (i, j)
             v = map[k]
-            if v == "|":
-                out = not out
-            elif v == "F":
-                openborder = "F"
-            elif v == "L":
-                openborder = "L"
-            elif v == "7":
-                if openborder == "L":
+            if k in path:
+                if v == "|":
                     out = not out
-            elif v == "J":
-                if openborder == "F":
-                    out = not out
+                elif v == "F":
+                    openborder = "F"
+                elif v == "L":
+                    openborder = "L"
+                elif v == "7":
+                    if openborder == "L":
+                        out = not out
+                elif v == "J":
+                    if openborder == "F":
+                        out = not out
 
             if not out and k not in path:
                 map[k] = "I"
@@ -101,12 +112,6 @@ def traped(map: Map, path: Set[Coord], x: int, y: int) -> Set[Coord]:
                 map[k] = "O"
     return ts
 
-
-example1 = "10/example1"
-example2 = "10/example2"
-example3 = "10/example3"
-input = "10/input"
-file = example3
 
 diagram = [line.strip() for line in open(file)]
 rows = len(diagram)
@@ -117,16 +122,11 @@ map: Map = {(r, c): v for r, row in enumerate(diagram)
             for c, v in enumerate(row)}
 
 init: Coord = next(k for k, v in map.items() if v == "S")
-if file == example3:
-    map[init] = "F"
-
 
 loop = get_loop(map, init)
 
-
 s = len(loop)/2
 
-ts = traped(map, loop, rows, columns)
 
 for line in diagram:
     print(line)
@@ -140,9 +140,44 @@ if file == example1 and s != 4:
 if file == example2 and s != 8:
     raise Exception(f"{s}")
 
+if file == input and s != 6907:
+    raise Exception(f"{s}")
+
+
+# Replace init
+ns: Set[Direction] = set()
+for d in Direction:
+    neighbor: Coord = (init[0]+d.value[0], init[1]+d.value[1])
+    if neighbor in map.keys():
+        if d in from_dir[map[neighbor]]:
+            ns.add(d)
+
+
+if ns == set([Direction.S, Direction.E]):
+    map[init] = "F"
+elif ns == set([Direction.S, Direction.W]):
+    map[init] = "7"
+else:
+    raise Exception(f"{ns} not ready")
+
+ts = traped(map, loop, rows, columns)
+
 s2 = len(ts)
 if file == example3 and s2 != 4:
     raise Exception(f"{s2}")
 
-if file == input and s != 6907:
-    raise Exception(f"{s}")
+if file == example4 and s2 != 4:
+    raise Exception(f"{s2}")
+
+if file == example5 and s2 != 8:
+    raise Exception(f"{s2}")
+
+if file == example6 and s2 != 10:
+    raise Exception(f"{s2}")
+
+if file == input and s2 != 541:
+    raise Exception(f"{s2}")
+
+
+print("----")
+print_map(map, loop, rows, columns)
