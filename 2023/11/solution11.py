@@ -23,39 +23,46 @@ def distance(pair: Tuple[Coord, Coord]) -> int:
     return d
 
 
-def distances(file: str) -> List[int]:
+def distances(file: str, expand: int = 1) -> List[int]:
     data = [line.strip() for line in open(file)]
 
     rows = len(data)
     cols = len(data[0])
 
-    galaxies = get_galaxies(data)
+    original_galaxies = get_galaxies(data)
 
     rows_to_expand = set(range(rows))
     cols_to_expand = set(range(cols))
 
-    for c in galaxies:
-        rows_to_expand.discard(c.r)
-        cols_to_expand.discard(c.c)
+    for coord in original_galaxies:
+        rows_to_expand.discard(coord.r)
+        cols_to_expand.discard(coord.c)
 
+    galaxies: Set[Coord] = set()
+    for coord in original_galaxies:
+        len_r = len([r for r in rows_to_expand if r < coord.r])
+        r = coord.r+expand*len_r
+        len_c = len([c for c in cols_to_expand if c < coord.c])
+        c = coord.c+expand*len_c
+        galaxies.add(Coord(r, c))
 
-# Expand rows
-    expadended: List[str] = []
-    for i, row in enumerate(data):
-        expadended.append(row)
-        if i in rows_to_expand:
-            expadended.append("."*cols)
+    # # Expand rows
+    # expadended: List[str] = []
+    # for i, row in enumerate(data):
+    #     expadended.append(row)
+    #     if i in rows_to_expand:
+    #         expadended.append("."*cols)
 
-# Expand cols
-    for r, row in enumerate(expadended):
-        result = []
-        for i, char in enumerate(row):
-            result.append(char)
-            if i in cols_to_expand:
-                result.append(".")
-        expadended[r] = ''.join(result)
+    # # Expand cols
+    # for r, row in enumerate(expadended):
+    #     result = []
+    #     for i, char in enumerate(row):
+    #         result.append(char)
+    #         if i in cols_to_expand:
+    #             result.append(".")
+    #     expadended[r] = ''.join(result)
 
-    galaxies = get_galaxies(expadended)
+    # galaxies = get_galaxies(expadended)
 
     pairs: Set[Tuple[Coord, Coord]] = set()
     galaxies_copy = galaxies.copy()
@@ -75,10 +82,10 @@ def distances(file: str) -> List[int]:
         nine = Coord(11, 5)
 
         cs = [one, seven, three, six, eight, nine]
-        for c in cs:
-            if c not in galaxies:
+        for coord in cs:
+            if coord not in galaxies:
                 print(galaxies)
-                raise Exception(f"{c}")
+                raise Exception(f"{coord}")
 
         d: Dict[Tuple[Coord, Coord], int] = {
             (one, seven): 15, (three, six): 17, (eight, nine): 5}
@@ -99,5 +106,5 @@ if s != 374:
 
 file = "11/input"
 s = sum(distances(file))
-if s != 0:
+if s != 9724940:
     raise Exception(f"for {file}:{s}")
