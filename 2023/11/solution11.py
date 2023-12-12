@@ -23,7 +23,8 @@ def distance(pair: Tuple[Coord, Coord]) -> int:
     return d
 
 
-def distances(file: str, expand: int = 1) -> List[int]:
+def distances(file: str, expand: int = 2) -> List[int]:
+    expand -= 1
     data = [line.strip() for line in open(file)]
 
     rows = len(data)
@@ -46,24 +47,6 @@ def distances(file: str, expand: int = 1) -> List[int]:
         c = coord.c+expand*len_c
         galaxies.add(Coord(r, c))
 
-    # # Expand rows
-    # expadended: List[str] = []
-    # for i, row in enumerate(data):
-    #     expadended.append(row)
-    #     if i in rows_to_expand:
-    #         expadended.append("."*cols)
-
-    # # Expand cols
-    # for r, row in enumerate(expadended):
-    #     result = []
-    #     for i, char in enumerate(row):
-    #         result.append(char)
-    #         if i in cols_to_expand:
-    #             result.append(".")
-    #     expadended[r] = ''.join(result)
-
-    # galaxies = get_galaxies(expadended)
-
     pairs: Set[Tuple[Coord, Coord]] = set()
     galaxies_copy = galaxies.copy()
     a = galaxies_copy.pop()
@@ -73,7 +56,7 @@ def distances(file: str, expand: int = 1) -> List[int]:
         a = galaxies_copy.pop()
 
     # Checks
-    if file == "11/example":
+    if file == "11/example" and expand == 1:
         one = Coord(0, 4)
         seven = Coord(10, 9)
         three = Coord(2, 0)
@@ -107,4 +90,20 @@ if s != 374:
 file = "11/input"
 s = sum(distances(file))
 if s != 9724940:
+    raise Exception(f"for {file}:{s}")
+
+file = "11/example"
+s = sum(distances(file, 10))
+if s != 1030:
+    raise Exception(f"for {file}:{s}")
+
+file = "11/example"
+s = sum(distances(file, 100))
+if s != 8410:
+    raise Exception(f"for {file}:{s}")
+
+
+file = "11/input"
+s = sum(distances(file, 1000000))
+if s != 569052586852:
     raise Exception(f"for {file}:{s}")
