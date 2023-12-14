@@ -239,7 +239,7 @@ for i, r in enumerate(records):
 
 solution = sum(arrs)
 
-arrs2 = [arragements_brut(r) for r in records]
+# arrs2 = [arragements_brut(r) for r in records]
 
 if file == example and solution != 21:
     raise Exception(f"{solution}")
