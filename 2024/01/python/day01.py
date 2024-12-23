@@ -1,5 +1,6 @@
 import unittest
 from typing import Iterator, Tuple, List
+from collections import Counter
 
 def process_line(line: str) -> Tuple[int, int]:
     """
@@ -37,6 +38,12 @@ def calculate_distance(col1: list[int], col2: list[int]) -> int:
     col2.sort()
     return sum(abs(a - b) for a, b in zip(col1, col2))
 
+def similarity(col1: list[int], col2: list[int]) -> int:
+    c1=Counter(col1)
+    c2=Counter(col2)
+    sims=[e * n * c2[e] for e, n in c1.items()]
+    return sum(sims)
+    
 
 
 
@@ -46,7 +53,8 @@ if __name__ == "__main__":
     try:
         col1, col2 = get_data_from_file(file_path)
         result=calculate_distance(col1,col2)
-        print("Result: ", result)
+        print("Result1: ", result)
+        print("Result2: ", similarity(col1, col2))
     except ValueError as e:
         print("Error:", e)
 
