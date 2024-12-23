@@ -41,8 +41,7 @@ def calculate_distance(col1: list[int], col2: list[int]) -> int:
 def similarity(col1: list[int], col2: list[int]) -> int:
     c1=Counter(col1)
     c2=Counter(col2)
-    sims=[e * n * c2[e] for e, n in c1.items()]
-    return sum(sims)
+    return sum(e * n * c2[e] for e, n in c1.items())
     
 
 
